@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LinkedIn Jobs Scraper</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <aside>
+    <h1>LinkedIn Jobs Scraper</h1>
+
+    <label>Roles <small>one per line</small>
+      <textarea id="roles" rows="3">Backend Engineer
+Software Engineer</textarea>
+    </label>
+
+    <label>Location <small>several allowed, comma separated</small>
+      <input id="location" type="text" value="India" list="places" placeholder="India, Europe, Germany…">
+      <datalist id="places">
+        <option value="India"><option value="Europe"><option value="European Union"><option value="United Kingdom">
+        <option value="Germany"><option value="Netherlands"><option value="Ireland"><option value="United States">
+        <option value="Canada"><option value="United Arab Emirates"><option value="Singapore"><option value="Australia">
+        <option value="Worldwide">
+      </datalist>
+    </label>
+
+    <label>Posted within
+      <select id="period">
+        <option value="86400">Past 24 hours</option>
+        <option value="1800">Past 30 minutes</option>
+        <option value="3600">Past hour</option>
+        <option value="7200">Past 2 hours</option>
+        <option value="21600">Past 6 hours</option>
+        <option value="43200">Past 12 hours</option>
+        <option value="604800">Past week</option>
+        <option value="2592000">Past month</option>
+        <option value="0">Any time</option>
+      </select>
+    </label>
+
+    <fieldset>
+      <legend>Years of experience asked for</legend>
+      <div class="row">
+        <label>Min <input id="minYears" type="number" min="0" max="30" placeholder="any"></label>
+        <label>Max <input id="maxYears" type="number" min="0" max="30" placeholder="any"></label>
+      </div>
+      <label class="chk"><input type="checkbox" id="keepUnknown" checked> Keep jobs that don't state years</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Get there first</legend>
+      <label class="chk"><input type="checkbox" id="early"> Only jobs with under 10 applicants</label>
+      <div class="row">
+        <label>Max applicants <input id="maxApplicants" type="number" min="1" placeholder="any"></label>
+        <label>Show first
+          <select id="showFirst">
+            <option value="newest">Newest</option>
+            <option value="fewest">Fewest applicants</option>
+          </select>
+        </label>
+      </div>
+      <label class="chk"><input type="checkbox" id="watch"> Keep watching and alert me to new jobs</label>
+      <label>Check every <small>minutes, 5 or more</small>
+        <input id="watchMins" type="number" min="5" max="240" value="10">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Company career pages</legend>
+      <p class="hint">Jobs often appear here before LinkedIn. Add company names or career page links, one per line. Works for companies whose careers site runs on Greenhouse, Lever or Ashby.</p>
+      <textarea id="companies" rows="3" placeholder="Stripe&#10;https://jobs.lever.co/palantir"></textarea>
+    </fieldset>
+
+    <label>Visa sponsorship <small>for jobs abroad</small>
+      <select id="visa">
+        <option value="any">Any</option>
+        <option value="yes">Only jobs that offer sponsorship</option>
+        <option value="hideNo">Hide jobs that say no sponsorship</option>
+      </select>
+    </label>
+
+    <fieldset>
+      <legend>Genuine jobs only</legend>
+      <label class="chk"><input type="checkbox" id="titleMatch" checked> Job title must match my roles</label>
+      <label class="chk"><input type="checkbox" id="dedupe" checked> Hide repeats of the same job</label>
+      <label class="chk"><input type="checkbox" id="hideClosed" checked> Hide jobs no longer accepting applications</label>
+    </fieldset>
+
+    <details>
+      <summary>More options</summary>
+      <label>Order
+        <select id="sort">
+          <option value="recent">Most recent first</option>
+          <option value="relevant">Most relevant first</option>
+        </select>
+      </label>
+      <fieldset>
+        <legend>LinkedIn experience level <small>none = all</small></legend>
+        <label class="chk"><input type="checkbox" class="lvl" value="1"> Internship</label>
+        <label class="chk"><input type="checkbox" class="lvl" value="2"> Entry level</label>
+        <label class="chk"><input type="checkbox" class="lvl" value="3"> Associate</label>
+        <label class="chk"><input type="checkbox" class="lvl" value="4"> Mid-Senior</label>
+        <label class="chk"><input type="checkbox" class="lvl" value="5"> Director</label>
+      </fieldset>
+      <fieldset>
+        <legend>Workplace <small>none = all</small></legend>
+        <label class="chk"><input type="checkbox" class="wt" value="1"> On-site</label>
+        <label class="chk"><input type="checkbox" class="wt" value="2"> Remote</label>
+        <label class="chk"><input type="checkbox" class="wt" value="3"> Hybrid</label>
+      </fieldset>
+      <label>Max jobs per role and location
+        <input id="maxJobs" type="number" min="10" max="1000" step="10" value="200">
+      </label>
+      <label class="chk"><input type="checkbox" id="quick"> Quick mode: skip job descriptions <small>no years, visa or email</small></label>
+    </details>
+
+    <div class="buttons">
+      <button id="start" class="primary">Scrape jobs</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
+
+    <fieldset>
+      <legend>Hiring posts with emails</legend>
+      <p class="hint">Uses your signed-in LinkedIn in this Chrome. A LinkedIn tab opens and scrolls by itself; leave it in front until it finishes.</p>
+      <label>How far to scroll <small>screens per page</small>
+        <input id="scrolls" type="number" min="5" max="200" value="40">
+      </label>
+      <label class="chk"><input type="checkbox" id="feed24" checked> Only posts from the last 24 hours</label>
+      <label class="chk"><input type="checkbox" id="feedRole" checked> Only posts mentioning my roles</label>
+      <label class="chk"><input type="checkbox" id="emailOnly"> Only show posts with an email</label>
+      <div class="buttons">
+        <button id="searchPosts">Search all of LinkedIn</button>
+        <button id="scanFeed">Scan my feed</button>
+      </div>
+    </fieldset>
+  </aside>
+
+  <main>
+    <header>
+      <nav>
+        <button class="tab active" data-tab="jobs">Jobs <span id="jobCount">0</span></button>
+        <button class="tab" data-tab="posts">Hiring posts <span id="postCount">0</span></button>
+      </nav>
+      <div class="tools">
+        <input id="search" type="search" placeholder="Filter results">
+        <button id="csv">Export CSV</button>
+        <button id="clear">Clear</button>
+      </div>
+    </header>
+    <div id="status">Ready.</div>
+    <div id="hidden" hidden></div>
+    <div class="tablewrap">
+      <table id="jobsTable">
+        <thead><tr>
+          <th>Job</th><th>Company</th><th>Location</th><th>Posted</th><th>Years</th><th>Visa</th><th>Email</th><th>Applicants</th><th>Source</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <table id="postsTable" hidden>
+        <thead><tr><th>Posted by</th><th>Age</th><th>Years</th><th>Email</th><th>Post</th><th>Link</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="core.js"></script>
+  <script src="feed.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
